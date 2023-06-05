@@ -11,10 +11,10 @@ namespace Laba4
     public partial class Form1 : Form
     {
         bool runVideo = false;
+        readonly OpenCvSharp.Size sizeObject = new OpenCvSharp.Size(640, 480);
         string pathToFile = null;
         VideoCapture capture;
         Mat matInput;
-        Mat matOutput;
         Thread cameraThread;
         public Form1()
         {
@@ -45,22 +45,23 @@ namespace Laba4
             {
                 runVideo = true;
                 matInput = new Mat();
-                matOutput = new Mat();
 
-                if (radioButton1.Checked) 
+                if (radioButton1.Checked)
                 {
-                    capture = new VideoCapture(0);
+                    capture = new VideoCapture(0)
+                    {
+                        FrameHeight = sizeObject.Height,
+                        FrameWidth = sizeObject.Width,
+                    };
                     cameraThread = new Thread(new ThreadStart(CaptureCameraCallback));
                     cameraThread.Start();
                 }
-                else if(radioButton3.Checked)
+                else if (radioButton3.Checked)
                 {
-                    matInput = new Mat(pathToFile);
-                    Cv2.Resize(matInput, matOutput, new OpenCvSharp.Size(640, 480));
+                    matInput = new Mat(pathToFile).Resize(sizeObject);
 
-                    Bitmap bmpWebCam = BitmapConverter.ToBitmap(matOutput);
+                    Bitmap bmpWebCam = BitmapConverter.ToBitmap(matInput);
                     pictureBox1.Image = bmpWebCam;
-                    matOutput.Dispose();
                 }
 
             }
@@ -70,13 +71,13 @@ namespace Laba4
             while (runVideo)
             {
                 if (capture.Read(matInput))
-                {
- 
-                    Cv2.Resize(matInput, matOutput, new OpenCvSharp.Size(640, 480));
+                { 
 
-                    Bitmap bmpWebCam = BitmapConverter.ToBitmap(matOutput);
+                    Bitmap bmpWebCam = BitmapConverter.ToBitmap(matInput);
                     pictureBox1.Image = bmpWebCam;
                 }
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
