@@ -14,36 +14,55 @@ namespace Laba4
         string pathToFile = null;
         VideoCapture capture;
         Mat matInput;
+        Mat matOutput;
         Thread cameraThread;
         public Form1()
         {
             InitializeComponent();
         }
-
         private void button1_Click(object sender, EventArgs e)
         {
+            panel1.Enabled = !panel1.Enabled;
+            panel2.Enabled = panel1.Enabled && radioButton3.Checked;
             StartVideo();
+            button1.Text = panel1.Enabled ? "Старт" : "Стоп";
+        }
+        private void DisposeVideo()
+        {
+            pictureBox1.Image = null;
+            if (cameraThread != null && cameraThread.IsAlive) cameraThread.Abort();
+            matInput?.Dispose();
+            capture?.Dispose();
         }
         private void StartVideo()
         {
             if (runVideo)
             {
                 runVideo = false;
-                pictureBox1.Image = null;
-                cameraThread.Abort();
-                matInput?.Dispose();
-                capture?.Dispose();
+                DisposeVideo();
             }
             else
             {
                 runVideo = true;
                 matInput = new Mat();
+                matOutput = new Mat();
 
-                if (radioButton1.Checked) capture = new VideoCapture(0);
-                else if (radioButton2.Checked) capture = new VideoCapture(pathToFile);
+                if (radioButton1.Checked) 
+                {
+                    capture = new VideoCapture(0);
+                    cameraThread = new Thread(new ThreadStart(CaptureCameraCallback));
+                    cameraThread.Start();
+                }
+                else if(radioButton3.Checked)
+                {
+                    matInput = new Mat(pathToFile);
+                    Cv2.Resize(matInput, matOutput, new OpenCvSharp.Size(640, 480));
 
-                cameraThread = new Thread(new ThreadStart(CaptureCameraCallback));
-                cameraThread.Start();
+                    Bitmap bmpWebCam = BitmapConverter.ToBitmap(matOutput);
+                    pictureBox1.Image = bmpWebCam;
+                    matOutput.Dispose();
+                }
+
             }
         }
         private void CaptureCameraCallback()
@@ -52,23 +71,17 @@ namespace Laba4
             {
                 if (capture.Read(matInput))
                 {
-                    Mat matOutput = new Mat();
+ 
                     Cv2.Resize(matInput, matOutput, new OpenCvSharp.Size(640, 480));
-
-                    //Cv2.Canny(matInput, matOutput, 90, 120);
 
                     Bitmap bmpWebCam = BitmapConverter.ToBitmap(matOutput);
                     pictureBox1.Image = bmpWebCam;
-                    matOutput.Dispose();
                 }
             }
         }
-
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (cameraThread != null && cameraThread.IsAlive) cameraThread.Abort();
-            matInput?.Dispose();
-            capture?.Dispose();
+            DisposeVideo();
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -83,7 +96,7 @@ namespace Laba4
                 if (File.Exists(tempPath))
                 {
                     var ext = Path.GetExtension(tempPath);
-                    //if (ext == ".flv")
+                    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
                     {
                         pathToFile = tempPath;
                         textBox1.Text = pathToFile;
@@ -91,6 +104,16 @@ namespace Laba4
                 }
             }
             file.Dispose();
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            panel2.Enabled = false;
+        }
+
+        private void radioButton3_CheckedChanged(object sender, EventArgs e)
+        {
+            panel2.Enabled = true;
         }
     }
 }
