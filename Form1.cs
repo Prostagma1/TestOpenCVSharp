@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 using MessageBox = System.Windows.Forms.MessageBox;
-using Point = System.Drawing.Point;
+using Point = OpenCvSharp.Point;
 
 namespace Laba4
 {
@@ -87,9 +87,8 @@ namespace Laba4
                 {
                     buffer[i] = inputMat.At<Vec3b>(point.Y, point.X)[i];
                 }
-                MessageBox.Show($"{buffer[0]} {buffer[1]} {buffer[2]}");
+                label2.Text = ($"{buffer[0]} {buffer[1]} {buffer[2]}");
             }
-
         }
         private void FormVideoProcessing(bool enable)
         {
@@ -184,7 +183,7 @@ namespace Laba4
         }
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
-            clickPoint = e.Location;
+            clickPoint = new Point(e.X, e.Y);
             canPrintPoint = checkBox1.Checked && true;
         }
 
