@@ -18,8 +18,9 @@ namespace Laba4
         Mat matInput;
         Thread cameraThread;
         Point clickPoint;
-        bool canPrintPoint, canDoMask, canDoMaskWithTemplate;
+        bool canPrintPoint, canDoMask, canDoMaskWithTemplate, canDoMaskHSV;
         byte[,] keys = new byte[3, 2];
+        byte[,] hsvKeys = new byte[3, 2];
         Mat[] templates = new Mat[5];
         public Form1()
         {
@@ -71,55 +72,50 @@ namespace Laba4
                 matInput = radioButton1.Checked ? capture.RetrieveMat() : new Mat(pathToFile).Resize(sizeObject);
 
                 FormVideoProcessing(secondFormStarted);
-                ReadPixelValue(matInput, clickPoint, ref canPrintPoint);
-                DoMaskByKeys(canDoMask, keys, ref matInput);
-                DoMaskWithTemplate(canDoMaskWithTemplate, ref matInput);
-
+                if (canPrintPoint)
+                {
+                    canPrintPoint = false;
+                    ReadPixelValue(matInput, clickPoint);
+                }
+                if (canDoMask) DoMaskByKeys(keys, ref matInput);
+                if (canDoMaskWithTemplate) Cv2.BitwiseAnd(templates[comboBox1.SelectedIndex], matInput, matInput);
+                if (canDoMaskHSV)
+                {
+                    matInput = matInput.CvtColor(ColorConversionCodes.BGR2HSV);
+                    DoMaskByKeys(hsvKeys, ref matInput);
+                    matInput = matInput.CvtColor(ColorConversionCodes.HSV2BGR);
+                }
                 pictureBox1.Image = BitmapConverter.ToBitmap(matInput);
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
         }
-        public void DoMaskWithTemplate(bool enable, ref Mat mat)
+        public void DoMaskByKeys(byte[,] colorKeys, ref Mat mat)
         {
-            if (enable)
+            for (int i = 0; i < mat.Rows; i++)
             {
-                Cv2.BitwiseAnd(templates[comboBox1.SelectedIndex], mat,mat);
-            }
-        }
-        public void DoMaskByKeys(bool enable, byte[,] colorKeys, ref Mat mat)
-        {
-            if (enable)
-            {
-                for (int i = 0; i < mat.Rows; i++)
+                for (int j = 0; j < mat.Cols; j++)
                 {
-                    for (int j = 0; j < mat.Cols; j++)
+                    if (mat.At<Vec3b>(i, j)[0] < colorKeys[0, 0] || mat.At<Vec3b>(i, j)[0] > colorKeys[0, 1] ||
+                        mat.At<Vec3b>(i, j)[1] < colorKeys[1, 0] || mat.At<Vec3b>(i, j)[1] > colorKeys[1, 1] ||
+                        mat.At<Vec3b>(i, j)[2] < colorKeys[2, 0] || mat.At<Vec3b>(i, j)[2] > colorKeys[2, 1])
                     {
-                        if (mat.At<Vec3b>(i, j)[0] < colorKeys[0, 0] || mat.At<Vec3b>(i, j)[0] > colorKeys[0, 1] ||
-                            mat.At<Vec3b>(i, j)[1] < colorKeys[1, 0] || mat.At<Vec3b>(i, j)[1] > colorKeys[1, 1] ||
-                            mat.At<Vec3b>(i, j)[2] < colorKeys[2, 0] || mat.At<Vec3b>(i, j)[2] > colorKeys[2, 1])
-                        {
-                            mat.At<Vec3b>(i, j)[0] = 0;
-                            mat.At<Vec3b>(i, j)[1] = 0;
-                            mat.At<Vec3b>(i, j)[2] = 0;
-                        }
+                        mat.At<Vec3b>(i, j)[0] = 0;
+                        mat.At<Vec3b>(i, j)[1] = 0;
+                        mat.At<Vec3b>(i, j)[2] = 0;
                     }
                 }
             }
         }
-        public void ReadPixelValue(Mat inputMat, Point point, ref bool enable)
+        public void ReadPixelValue(Mat inputMat, Point point)
         {
-            if (enable)
+            byte[] buffer = new byte[3];
+            for (int i = 0; i < 3; i++)
             {
-                enable = false;
-                byte[] buffer = new byte[3];
-                for (int i = 0; i < 3; i++)
-                {
-                    buffer[i] = inputMat.At<Vec3b>(point.Y, point.X)[i];
-                }
-                label2.Text = ($"{buffer[0]} {buffer[1]} {buffer[2]}");
+                buffer[i] = inputMat.At<Vec3b>(point.Y, point.X)[i];
             }
+            label2.Text = ($"{buffer[0]} {buffer[1]} {buffer[2]}");
         }
         private void FormVideoProcessing(bool enable)
         {
@@ -180,7 +176,6 @@ namespace Laba4
         {
             DisposeVideo();
         }
-
         private void button2_Click(object sender, EventArgs e)
         {
             OpenFileDialog file = new OpenFileDialog()
@@ -202,12 +197,10 @@ namespace Laba4
             }
             file.Dispose();
         }
-
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
             panel2.Enabled = false;
         }
-
         private void radioButton3_CheckedChanged(object sender, EventArgs e)
         {
             panel2.Enabled = true;
@@ -217,17 +210,58 @@ namespace Laba4
             clickPoint = new Point(e.X, e.Y);
             canPrintPoint = checkBox1.Checked && true;
         }
-
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
             canDoMask = checkBox2.Checked;
         }
-
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         {
             canDoMaskWithTemplate = checkBox3.Checked;
         }
 
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (comboBox2.SelectedIndex)
+            {
+                case 0:
+                    hsvKeys[0, 0] = 50;
+                    hsvKeys[0, 1] = 80;
+                    hsvKeys[1, 0] = 200;
+                    hsvKeys[1, 1] = 255;
+                    hsvKeys[2, 0] = 30;
+                    hsvKeys[2, 1] = 255;
+                    break;
+                case 1:
+                    hsvKeys[0, 0] = 0;
+                    hsvKeys[0, 1] = 10;
+                    hsvKeys[1, 0] = 163;
+                    hsvKeys[1, 1] = 255;
+                    hsvKeys[2, 0] = 134;
+                    hsvKeys[2, 1] = 255;
+                    break;
+                case 2:
+                    hsvKeys[0, 0] = 18;
+                    hsvKeys[0, 1] = 60;
+                    hsvKeys[1, 0] = 120;
+                    hsvKeys[1, 1] = 255;
+                    hsvKeys[2, 0] = 175;
+                    hsvKeys[2, 1] = 255;
+                    break;
+                case 3:
+                    hsvKeys[0, 0] = 88;
+                    hsvKeys[0, 1] = 165;
+                    hsvKeys[1, 0] = 150;
+                    hsvKeys[1, 1] = 255;
+                    hsvKeys[2, 0] = 100;
+                    hsvKeys[2, 1] = 255;
+                    break;
+            }
+        }
+
+        private void checkBox4_CheckedChanged(object sender, EventArgs e)
+        {
+            canDoMaskHSV = checkBox4.Checked;
+        }
         private void button4_Click(object sender, EventArgs e)
         {
             if (!(byte.TryParse(textBox2.Text, out keys[0, 0]) && byte.TryParse(textBox3.Text, out keys[0, 1]) &&
@@ -237,7 +271,6 @@ namespace Laba4
                 MessageBox.Show("Данные не верно введены!\nДанные должны быть в диапазоне [0;255]", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         private void Form1_Load(object sender, EventArgs e)
         {
             comboBox1.SelectedIndex = 0;
@@ -245,8 +278,13 @@ namespace Laba4
             {
                 templates[i] = new Mat($@"D:\Study\4 sem\TechnicalVision\Template\{i + 1}.png").Resize(sizeObject);
             }
-        }
+            for (byte i = 0; i < 3; i++)
+            {
+                hsvKeys[i, 0] = 0;
+                hsvKeys[i, 1] = byte.MaxValue;
 
+            }
+        }
         private void button3_Click(object sender, EventArgs e)
         {
             form?.Dispose();
