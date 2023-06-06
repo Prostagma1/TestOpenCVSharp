@@ -3,8 +3,9 @@ using OpenCvSharp.Extensions;
 using System;
 using System.IO;
 using System.Threading;
-using System.Web.UI.WebControls;
 using System.Windows.Forms;
+using MessageBox = System.Windows.Forms.MessageBox;
+using Point = System.Drawing.Point;
 
 namespace Laba4
 {
@@ -17,6 +18,8 @@ namespace Laba4
         VideoCapture capture;
         Mat matInput;
         Thread cameraThread;
+        Point clickPoint;
+        bool canPrintPoint;
         public Form1()
         {
             InitializeComponent();
@@ -67,14 +70,26 @@ namespace Laba4
                 matInput = radioButton1.Checked ? capture.RetrieveMat() : new Mat(pathToFile).Resize(sizeObject);
 
                 FormVideoProcessing(secondFormStarted);
-
-
+                ReadPixelValue(matInput, clickPoint, ref canPrintPoint);
                 pictureBox1.Image = BitmapConverter.ToBitmap(matInput);
-
                 Cv2.WaitKey(30);
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
+        }
+        public void ReadPixelValue(Mat inputMat, Point point, ref bool enable)
+        {
+            if (enable)
+            {
+                enable = false;
+                byte[] buffer = new byte[3];
+                for (int i = 0; i < 3; i++)
+                {
+                    buffer[i] = inputMat.At<Vec3b>(point.Y, point.X)[i];
+                }
+                MessageBox.Show($"{buffer[0]} {buffer[1]} {buffer[2]}");
+            }
+
         }
         private void FormVideoProcessing(bool enable)
         {
@@ -167,10 +182,10 @@ namespace Laba4
         {
             panel2.Enabled = true;
         }
-
-        private void Form1_Load(object sender, EventArgs e)
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
-
+            clickPoint = e.Location;
+            canPrintPoint = checkBox1.Checked && true;
         }
 
         private void button3_Click(object sender, EventArgs e)
