@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
-using MessageBox = System.Windows.Forms.MessageBox;
 using Point = OpenCvSharp.Point;
 
 namespace Laba4
@@ -12,14 +11,16 @@ namespace Laba4
     public partial class Form1 : Form
     {
         bool runVideo = false, secondFormStarted;
-        readonly OpenCvSharp.Size sizeObject = new OpenCvSharp.Size(640, 480);
+        readonly Size sizeObject = new Size(640, 480);
         Form2 form;
-        string pathToFile = null;
+        string pathToFile = String.Empty;
         VideoCapture capture;
         Mat matInput;
         Thread cameraThread;
         Point clickPoint;
-        bool canPrintPoint;
+        bool canPrintPoint, canDoMask, canDoMaskWithTemplate;
+        byte[,] keys = new byte[3, 2];
+        Mat[] templates = new Mat[5];
         public Form1()
         {
             InitializeComponent();
@@ -71,10 +72,40 @@ namespace Laba4
 
                 FormVideoProcessing(secondFormStarted);
                 ReadPixelValue(matInput, clickPoint, ref canPrintPoint);
+                DoMaskByKeys(canDoMask, keys, ref matInput);
+                DoMaskWithTemplate(canDoMaskWithTemplate, ref matInput);
+
                 pictureBox1.Image = BitmapConverter.ToBitmap(matInput);
-                Cv2.WaitKey(30);
+
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
+            }
+        }
+        public void DoMaskWithTemplate(bool enable, ref Mat mat)
+        {
+            if (enable)
+            {
+                Cv2.BitwiseAnd(templates[comboBox1.SelectedIndex], mat,mat);
+            }
+        }
+        public void DoMaskByKeys(bool enable, byte[,] colorKeys, ref Mat mat)
+        {
+            if (enable)
+            {
+                for (int i = 0; i < mat.Rows; i++)
+                {
+                    for (int j = 0; j < mat.Cols; j++)
+                    {
+                        if (mat.At<Vec3b>(i, j)[0] < colorKeys[0, 0] || mat.At<Vec3b>(i, j)[0] > colorKeys[0, 1] ||
+                            mat.At<Vec3b>(i, j)[1] < colorKeys[1, 0] || mat.At<Vec3b>(i, j)[1] > colorKeys[1, 1] ||
+                            mat.At<Vec3b>(i, j)[2] < colorKeys[2, 0] || mat.At<Vec3b>(i, j)[2] > colorKeys[2, 1])
+                        {
+                            mat.At<Vec3b>(i, j)[0] = 0;
+                            mat.At<Vec3b>(i, j)[1] = 0;
+                            mat.At<Vec3b>(i, j)[2] = 0;
+                        }
+                    }
+                }
             }
         }
         public void ReadPixelValue(Mat inputMat, Point point, ref bool enable)
@@ -185,6 +216,35 @@ namespace Laba4
         {
             clickPoint = new Point(e.X, e.Y);
             canPrintPoint = checkBox1.Checked && true;
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            canDoMask = checkBox2.Checked;
+        }
+
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            canDoMaskWithTemplate = checkBox3.Checked;
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (!(byte.TryParse(textBox2.Text, out keys[0, 0]) && byte.TryParse(textBox3.Text, out keys[0, 1]) &&
+                byte.TryParse(textBox4.Text, out keys[1, 0]) && byte.TryParse(textBox5.Text, out keys[1, 1]) &&
+                byte.TryParse(textBox6.Text, out keys[2, 0]) && byte.TryParse(textBox7.Text, out keys[2, 1])))
+            {
+                MessageBox.Show("Данные не верно введены!\nДанные должны быть в диапазоне [0;255]", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            comboBox1.SelectedIndex = 0;
+            for (byte i = 0; i < 5; i++)
+            {
+                templates[i] = new Mat($@"D:\Study\4 sem\TechnicalVision\Template\{i + 1}.png").Resize(sizeObject);
+            }
         }
 
         private void button3_Click(object sender, EventArgs e)
