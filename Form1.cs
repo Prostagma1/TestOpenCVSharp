@@ -1,17 +1,18 @@
 ﻿using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
-using System.Drawing;
 using System.IO;
 using System.Threading;
+using System.Web.UI.WebControls;
 using System.Windows.Forms;
 
 namespace Laba4
 {
     public partial class Form1 : Form
     {
-        bool runVideo = false;
+        bool runVideo = false, secondFormStarted;
         readonly OpenCvSharp.Size sizeObject = new OpenCvSharp.Size(640, 480);
+        Form2 form;
         string pathToFile = null;
         VideoCapture capture;
         Mat matInput;
@@ -52,32 +53,82 @@ namespace Laba4
                     {
                         FrameHeight = sizeObject.Height,
                         FrameWidth = sizeObject.Width,
+                        AutoFocus = true
                     };
-                    cameraThread = new Thread(new ThreadStart(CaptureCameraCallback));
-                    cameraThread.Start();
                 }
-                else if (radioButton3.Checked)
-                {
-                    matInput = new Mat(pathToFile).Resize(sizeObject);
-
-                    Bitmap bmpWebCam = BitmapConverter.ToBitmap(matInput);
-                    pictureBox1.Image = bmpWebCam;
-                }
-
+                cameraThread = new Thread(new ThreadStart(CaptureCameraCallback));
+                cameraThread.Start();
             }
         }
         private void CaptureCameraCallback()
         {
             while (runVideo)
             {
-                if (capture.Read(matInput))
-                { 
+                matInput = radioButton1.Checked ? capture.RetrieveMat() : new Mat(pathToFile).Resize(sizeObject);
 
-                    Bitmap bmpWebCam = BitmapConverter.ToBitmap(matInput);
-                    pictureBox1.Image = bmpWebCam;
-                }
+                FormVideoProcessing(secondFormStarted);
+
+
+                pictureBox1.Image = BitmapConverter.ToBitmap(matInput);
+
+                Cv2.WaitKey(30);
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
+            }
+        }
+        private void FormVideoProcessing(bool enable)
+        {
+            if (enable)
+            {
+                for (sbyte i = 0; i < 4; i++)
+                {
+                    if (form.colorChange == i) ChangeColorSpace(form.selectedColorSpace, ref matInput);
+                    if (form.inRange == i) matInput = matInput.InRange(form.scalars[0], form.scalars[1]);
+                    if (form.canny == i) matInput = matInput.Canny(form.cannyValues[0], form.cannyValues[1], form.cannyValues[2]);
+                    if (form.blur == i) Bluring(form.selectedBlur, ref matInput);
+                }
+            }
+        }
+        private void Bluring(string nameBlur, ref Mat mat)
+        {
+            switch (nameBlur)
+            {
+                case "Blur":
+                    mat = mat.Blur(new OpenCvSharp.Size(form.valueForBlur, form.valueForBlur));
+                    break;
+                case "Gaussian Blurring":
+                    mat = mat.GaussianBlur(new OpenCvSharp.Size(form.valuesForGauss[0], form.valuesForGauss[0]), form.valuesForGauss[1], form.valuesForGauss[2]);
+                    break;
+                case "Median Blurring":
+                    mat = mat.MedianBlur(form.valueForMedian);
+                    break;
+                case "Bilateral Filtering":
+                    mat = mat.BilateralFilter(form.valuesForBil[0], form.valuesForBil[1], form.valuesForBil[2]);
+                    break;
+            }
+        }
+        private void ChangeColorSpace(string nameSpace, ref Mat mat)
+        {
+            switch (nameSpace)
+            {
+                case "BGR2GRAY":
+                    mat = mat.CvtColor(ColorConversionCodes.BGR2GRAY);
+                    break;
+                case "BGR2HLS":
+                    mat = mat.CvtColor(ColorConversionCodes.BGR2HLS);
+                    break;
+                case "BGR2HSV":
+                    mat = mat.CvtColor(ColorConversionCodes.BGR2HSV);
+                    break;
+                case "BGR2RGB":
+                    mat = mat.CvtColor(ColorConversionCodes.BGR2RGB);
+                    break;
+                case "BGR2XYZ":
+                    mat = mat.CvtColor(ColorConversionCodes.BGR2XYZ);
+                    break;
+                case "BGR2YUV":
+                    mat = mat.CvtColor(ColorConversionCodes.BGR2YUV);
+                    break;
             }
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -115,6 +166,19 @@ namespace Laba4
         private void radioButton3_CheckedChanged(object sender, EventArgs e)
         {
             panel2.Enabled = true;
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            form?.Dispose();
+            form = new Form2();
+            form.Show();
+            secondFormStarted = true;
         }
     }
 }
