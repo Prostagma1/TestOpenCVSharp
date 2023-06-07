@@ -1,6 +1,7 @@
 ﻿using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Threading;
@@ -12,20 +13,18 @@ namespace Laba4
 {
     public partial class Form1 : Form
     {
-        bool runVideo, secondFormStarted, findRed;
+        bool runVideo, secondFormStarted, findRed, canPrintPoint, canDoMask, canDoMaskWithTemplate, canDoMaskHSV;
         readonly Size sizeObject = new Size(640, 480);
         Form2 form;
         string pathToFile = String.Empty;
+        List<Rect> rects;
         VideoCapture capture;
         Mat matInput;
         Thread cameraThread;
         Point clickPoint;
-        bool canPrintPoint, canDoMask, canDoMaskWithTemplate, canDoMaskHSV;
         byte[,] keys = new byte[3, 2];
         byte[,] hsvKeys = new byte[3, 2];
         Mat[] templates = new Mat[5];
-        Mat[] contours;
-        Mat d = new Mat();
         int[] sizeCont = new int[2];
         public Form1()
         {
@@ -75,10 +74,8 @@ namespace Laba4
 
             while (runVideo)
             {
-                Bitmap bitmapDebugg = new Bitmap(1,1);
-                Mat matForSearching = new Mat(sizeObject, MatType.CV_8UC3);
+                Bitmap bitmapDebugg = new Bitmap(1, 1);
                 matInput = radioButton1.Checked ? capture.RetrieveMat() : new Mat(pathToFile).Resize(sizeObject);
-                matInput.CopyTo(matForSearching);
 
                 FormVideoProcessing(secondFormStarted);
                 if (canPrintPoint)
@@ -90,28 +87,50 @@ namespace Laba4
                 if (canDoMaskWithTemplate) Cv2.BitwiseAnd(templates[comboBox1.SelectedIndex], matInput, matInput);
                 if (canDoMaskHSV)
                 {
-                    matForSearching = matForSearching.CvtColor(ColorConversionCodes.BGR2HSV);
-                    DoMaskByKeys(hsvKeys, ref matForSearching,findRed);
-
-                    matForSearching = matForSearching.GaussianBlur(new Size(7, 7), 0);
-                    bitmapDebugg = BitmapConverter.ToBitmap(matForSearching.CvtColor(ColorConversionCodes.HSV2BGR).Resize(new Size(256, 256)));
-
-                    matForSearching = matForSearching.Canny(250, 100);
-                    matForSearching.FindContours(out contours, d, RetrievalModes.External, ContourApproximationModes.ApproxNone);
-                    foreach (Mat countur in contours)
+                    listBox1.Items.Clear();
+                    rects = new List<Rect>();
+                    SearchingContours(ref matInput, sizeCont, out rects,out bitmapDebugg, true);
+                    foreach (Rect rect in rects)
                     {
-                        var a = Cv2.BoundingRect(countur);
-                        if (a.Width < sizeCont[0] || a.Height < sizeCont[0] || a.Width > sizeCont[1] || a.Height > sizeCont[1]) continue;
-                        Cv2.Rectangle(matInput, a, Scalar.Red);
+                        listBox1.Items.Add(rect);
                     }
                 }
                 pictureBox1.Image = BitmapConverter.ToBitmap(matInput);
                 pictureBox2.Image = bitmapDebugg;
                 GC.Collect();
+                Cv2.WaitKey(500);
                 GC.WaitForPendingFinalizers();
             }
         }
-        public void DoMaskByKeys(byte[,] colorKeys, ref Mat mat,bool findRed = false)
+        public void SearchingContours(ref Mat inputMat,int[] sizeCountur,out List<Rect> filteredCounturs,out Bitmap bitmapDebugg, bool drawRectangle = false)
+        {
+            filteredCounturs = new List<Rect>();
+            Mat matForSearching = new Mat(sizeObject, MatType.CV_8UC3);
+            Mat mat = new Mat();
+            Mat[] contours;
+            inputMat.CopyTo(matForSearching);
+
+            matForSearching = matForSearching.CvtColor(ColorConversionCodes.BGR2HSV);
+            DoMaskByKeys(hsvKeys, ref matForSearching, findRed);
+
+            matForSearching = matForSearching.GaussianBlur(new Size(7, 7), 0);
+            bitmapDebugg = BitmapConverter.ToBitmap(matForSearching.CvtColor(ColorConversionCodes.HSV2BGR).Resize(new Size(256, 256)));
+
+            matForSearching = matForSearching.Canny(250, 100);
+            matForSearching.FindContours(out contours, mat, RetrievalModes.External, ContourApproximationModes.ApproxNone);
+            foreach (Mat countur in contours)
+            {
+                var a = Cv2.BoundingRect(countur);
+                if (a.Width < sizeCountur[0] || a.Height < sizeCountur[0] || a.Width > sizeCountur[1] || a.Height > sizeCountur[1]) continue;
+                if (drawRectangle) 
+                {
+                    Cv2.Rectangle(matInput, a, Scalar.Red);
+                    matInput.PutText(a.ToString(), new Point(a.X-5, a.Y - 15), HersheyFonts.HersheySimplex,0.5, Scalar.Red);
+                } 
+                filteredCounturs.Add(a);
+            }
+        }
+        public void DoMaskByKeys(byte[,] colorKeys, ref Mat mat, bool findRed = false)
         {
             for (int i = 0; i < mat.Rows; i++)
             {
@@ -119,7 +138,7 @@ namespace Laba4
                 {
                     if (findRed)
                     {
-                        if (((mat.At<Vec3b>(i, j)[0] >= 0 && mat.At<Vec3b>(i, j)[0] <= 10 ) || (mat.At<Vec3b>(i, j)[0] >= 165 && mat.At<Vec3b>(i, j)[0] <= 255)) &&
+                        if (((mat.At<Vec3b>(i, j)[0] >= 0 && mat.At<Vec3b>(i, j)[0] <= 10) || (mat.At<Vec3b>(i, j)[0] >= 165 && mat.At<Vec3b>(i, j)[0] <= 255)) &&
                             ((mat.At<Vec3b>(i, j)[1] >= 163 && mat.At<Vec3b>(i, j)[1] <= 255) || (mat.At<Vec3b>(i, j)[1] >= 126 && mat.At<Vec3b>(i, j)[1] <= 255)) &&
                             ((mat.At<Vec3b>(i, j)[2] >= 134 && mat.At<Vec3b>(i, j)[2] <= 255) || (mat.At<Vec3b>(i, j)[2] >= 165 && mat.At<Vec3b>(i, j)[2] <= 255)))
                         {
@@ -256,13 +275,11 @@ namespace Laba4
         {
             canDoMaskWithTemplate = checkBox3.Checked;
         }
-
         private void button5_Click(object sender, EventArgs e)
         {
             sizeCont[0] = int.Parse(textBox8.Text);
             sizeCont[1] = int.Parse(textBox9.Text);
         }
-
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
             findRed = false;
@@ -289,7 +306,7 @@ namespace Laba4
                     hsvKeys[0, 0] = 15; // 18 
                     hsvKeys[0, 1] = 40; // 60
                     hsvKeys[1, 0] = 15; //120
-                    hsvKeys[1, 1] = 255; 
+                    hsvKeys[1, 1] = 255;
                     hsvKeys[2, 0] = 140; //175
                     hsvKeys[2, 1] = 255;
                     break;
