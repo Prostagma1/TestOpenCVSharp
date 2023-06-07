@@ -42,26 +42,32 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.textBox4 = new System.Windows.Forms.TextBox();
+            this.button4 = new System.Windows.Forms.Button();
             this.textBox5 = new System.Windows.Forms.TextBox();
             this.textBox6 = new System.Windows.Forms.TextBox();
             this.textBox7 = new System.Windows.Forms.TextBox();
-            this.button4 = new System.Windows.Forms.Button();
+            this.textBox4 = new System.Windows.Forms.TextBox();
+            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.checkBox3 = new System.Windows.Forms.CheckBox();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.panel4 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.button5 = new System.Windows.Forms.Button();
+            this.textBox9 = new System.Windows.Forms.TextBox();
+            this.textBox8 = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.checkBox4 = new System.Windows.Forms.CheckBox();
+            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -79,7 +85,7 @@
             this.pictureBox1.BackColor = System.Drawing.SystemColors.Control;
             this.pictureBox1.Location = new System.Drawing.Point(665, 26);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(850, 590);
+            this.pictureBox1.Size = new System.Drawing.Size(850, 609);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
@@ -211,40 +217,15 @@
             this.panel3.Size = new System.Drawing.Size(328, 134);
             this.panel3.TabIndex = 13;
             // 
-            // checkBox2
+            // button4
             // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(3, 3);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(312, 20);
-            this.checkBox2.TabIndex = 14;
-            this.checkBox2.Text = "Фильтрация пикселей по цветовому ключу";
-            this.checkBox2.UseVisualStyleBackColor = true;
-            this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
-            // 
-            // textBox2
-            // 
-            this.textBox2.Location = new System.Drawing.Point(2, 42);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(100, 22);
-            this.textBox2.TabIndex = 14;
-            this.textBox2.Text = "0";
-            // 
-            // textBox3
-            // 
-            this.textBox3.Location = new System.Drawing.Point(2, 70);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(100, 22);
-            this.textBox3.TabIndex = 15;
-            this.textBox3.Text = "255";
-            // 
-            // textBox4
-            // 
-            this.textBox4.Location = new System.Drawing.Point(113, 42);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(100, 22);
-            this.textBox4.TabIndex = 16;
-            this.textBox4.Text = "0";
+            this.button4.Location = new System.Drawing.Point(3, 98);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(320, 31);
+            this.button4.TabIndex = 14;
+            this.button4.Text = "Принять значения";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
             // textBox5
             // 
@@ -270,15 +251,40 @@
             this.textBox7.TabIndex = 17;
             this.textBox7.Text = "255";
             // 
-            // button4
+            // textBox4
             // 
-            this.button4.Location = new System.Drawing.Point(3, 98);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(320, 31);
-            this.button4.TabIndex = 14;
-            this.button4.Text = "Принять значения";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
+            this.textBox4.Location = new System.Drawing.Point(113, 42);
+            this.textBox4.Name = "textBox4";
+            this.textBox4.Size = new System.Drawing.Size(100, 22);
+            this.textBox4.TabIndex = 16;
+            this.textBox4.Text = "0";
+            // 
+            // textBox3
+            // 
+            this.textBox3.Location = new System.Drawing.Point(2, 70);
+            this.textBox3.Name = "textBox3";
+            this.textBox3.Size = new System.Drawing.Size(100, 22);
+            this.textBox3.TabIndex = 15;
+            this.textBox3.Text = "255";
+            // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(2, 42);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(100, 22);
+            this.textBox2.TabIndex = 14;
+            this.textBox2.Text = "0";
+            // 
+            // checkBox2
+            // 
+            this.checkBox2.AutoSize = true;
+            this.checkBox2.Location = new System.Drawing.Point(3, 3);
+            this.checkBox2.Name = "checkBox2";
+            this.checkBox2.Size = new System.Drawing.Size(312, 20);
+            this.checkBox2.TabIndex = 14;
+            this.checkBox2.Text = "Фильтрация пикселей по цветовому ключу";
+            this.checkBox2.UseVisualStyleBackColor = true;
+            this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
             // 
             // checkBox3
             // 
@@ -312,17 +318,68 @@
             this.panel4.Controls.Add(this.checkBox3);
             this.panel4.Location = new System.Drawing.Point(346, 115);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(195, 65);
+            this.panel4.Size = new System.Drawing.Size(198, 65);
             this.panel4.TabIndex = 15;
             // 
             // panel5
             // 
+            this.panel5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel5.Controls.Add(this.button5);
+            this.panel5.Controls.Add(this.textBox9);
+            this.panel5.Controls.Add(this.textBox8);
+            this.panel5.Controls.Add(this.label3);
             this.panel5.Controls.Add(this.checkBox4);
             this.panel5.Controls.Add(this.comboBox2);
-            this.panel5.Location = new System.Drawing.Point(12, 255);
+            this.panel5.Location = new System.Drawing.Point(346, 186);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(647, 361);
+            this.panel5.Size = new System.Drawing.Size(198, 128);
             this.panel5.TabIndex = 16;
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(109, 70);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 50);
+            this.button5.TabIndex = 18;
+            this.button5.Text = "OK";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // textBox9
+            // 
+            this.textBox9.Location = new System.Drawing.Point(4, 98);
+            this.textBox9.Name = "textBox9";
+            this.textBox9.Size = new System.Drawing.Size(100, 22);
+            this.textBox9.TabIndex = 20;
+            this.textBox9.Text = "500";
+            // 
+            // textBox8
+            // 
+            this.textBox8.Location = new System.Drawing.Point(3, 70);
+            this.textBox8.Name = "textBox8";
+            this.textBox8.Size = new System.Drawing.Size(100, 22);
+            this.textBox8.TabIndex = 18;
+            this.textBox8.Text = "50";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(3, 51);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(189, 16);
+            this.label3.TabIndex = 17;
+            this.label3.Text = "Диапазон размера контура";
+            // 
+            // checkBox4
+            // 
+            this.checkBox4.AutoSize = true;
+            this.checkBox4.Location = new System.Drawing.Point(4, 3);
+            this.checkBox4.Name = "checkBox4";
+            this.checkBox4.Size = new System.Drawing.Size(95, 20);
+            this.checkBox4.TabIndex = 18;
+            this.checkBox4.Text = "checkBox4";
+            this.checkBox4.UseVisualStyleBackColor = true;
+            this.checkBox4.CheckedChanged += new System.EventHandler(this.checkBox4_CheckedChanged);
             // 
             // comboBox2
             // 
@@ -338,22 +395,21 @@
             this.comboBox2.TabIndex = 17;
             this.comboBox2.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
             // 
-            // checkBox4
+            // pictureBox2
             // 
-            this.checkBox4.AutoSize = true;
-            this.checkBox4.Location = new System.Drawing.Point(4, 3);
-            this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(95, 20);
-            this.checkBox4.TabIndex = 18;
-            this.checkBox4.Text = "checkBox4";
-            this.checkBox4.UseVisualStyleBackColor = true;
-            this.checkBox4.CheckedChanged += new System.EventHandler(this.checkBox4_CheckedChanged);
+            this.pictureBox2.BackColor = System.Drawing.SystemColors.Control;
+            this.pictureBox2.Location = new System.Drawing.Point(344, 320);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(315, 315);
+            this.pictureBox2.TabIndex = 17;
+            this.pictureBox2.TabStop = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1536, 642);
+            this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.panel4);
             this.Controls.Add(this.panel3);
@@ -380,6 +436,7 @@
             this.panel4.PerformLayout();
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -415,6 +472,11 @@
         private System.Windows.Forms.Panel panel5;
         private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.CheckBox checkBox4;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.TextBox textBox9;
+        private System.Windows.Forms.TextBox textBox8;
+        private System.Windows.Forms.Label label3;
     }
 }
 

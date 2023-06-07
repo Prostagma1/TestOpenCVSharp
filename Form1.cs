@@ -1,16 +1,18 @@
 ﻿using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 using Point = OpenCvSharp.Point;
+using Size = OpenCvSharp.Size;
 
 namespace Laba4
 {
     public partial class Form1 : Form
     {
-        bool runVideo = false, secondFormStarted;
+        bool runVideo, secondFormStarted, findRed;
         readonly Size sizeObject = new Size(640, 480);
         Form2 form;
         string pathToFile = String.Empty;
@@ -22,6 +24,9 @@ namespace Laba4
         byte[,] keys = new byte[3, 2];
         byte[,] hsvKeys = new byte[3, 2];
         Mat[] templates = new Mat[5];
+        Mat[] contours;
+        Mat d = new Mat();
+        int[] sizeCont = new int[2];
         public Form1()
         {
             InitializeComponent();
@@ -67,9 +72,13 @@ namespace Laba4
         }
         private void CaptureCameraCallback()
         {
+
             while (runVideo)
             {
+                Bitmap bitmapDebugg = new Bitmap(1,1);
+                Mat matForSearching = new Mat(sizeObject, MatType.CV_8UC3);
                 matInput = radioButton1.Checked ? capture.RetrieveMat() : new Mat(pathToFile).Resize(sizeObject);
+                matInput.CopyTo(matForSearching);
 
                 FormVideoProcessing(secondFormStarted);
                 if (canPrintPoint)
@@ -81,29 +90,58 @@ namespace Laba4
                 if (canDoMaskWithTemplate) Cv2.BitwiseAnd(templates[comboBox1.SelectedIndex], matInput, matInput);
                 if (canDoMaskHSV)
                 {
-                    matInput = matInput.CvtColor(ColorConversionCodes.BGR2HSV);
-                    DoMaskByKeys(hsvKeys, ref matInput);
-                    matInput = matInput.CvtColor(ColorConversionCodes.HSV2BGR);
+                    matForSearching = matForSearching.CvtColor(ColorConversionCodes.BGR2HSV);
+                    DoMaskByKeys(hsvKeys, ref matForSearching,findRed);
+
+                    matForSearching = matForSearching.GaussianBlur(new Size(7, 7), 0);
+                    bitmapDebugg = BitmapConverter.ToBitmap(matForSearching.CvtColor(ColorConversionCodes.HSV2BGR).Resize(new Size(256, 256)));
+
+                    matForSearching = matForSearching.Canny(250, 100);
+                    matForSearching.FindContours(out contours, d, RetrievalModes.External, ContourApproximationModes.ApproxNone);
+                    foreach (Mat countur in contours)
+                    {
+                        var a = Cv2.BoundingRect(countur);
+                        if (a.Width < sizeCont[0] || a.Height < sizeCont[0] || a.Width > sizeCont[1] || a.Height > sizeCont[1]) continue;
+                        Cv2.Rectangle(matInput, a, Scalar.Red);
+                    }
                 }
                 pictureBox1.Image = BitmapConverter.ToBitmap(matInput);
-
+                pictureBox2.Image = bitmapDebugg;
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
         }
-        public void DoMaskByKeys(byte[,] colorKeys, ref Mat mat)
+        public void DoMaskByKeys(byte[,] colorKeys, ref Mat mat,bool findRed = false)
         {
             for (int i = 0; i < mat.Rows; i++)
             {
                 for (int j = 0; j < mat.Cols; j++)
                 {
-                    if (mat.At<Vec3b>(i, j)[0] < colorKeys[0, 0] || mat.At<Vec3b>(i, j)[0] > colorKeys[0, 1] ||
-                        mat.At<Vec3b>(i, j)[1] < colorKeys[1, 0] || mat.At<Vec3b>(i, j)[1] > colorKeys[1, 1] ||
-                        mat.At<Vec3b>(i, j)[2] < colorKeys[2, 0] || mat.At<Vec3b>(i, j)[2] > colorKeys[2, 1])
+                    if (findRed)
                     {
-                        mat.At<Vec3b>(i, j)[0] = 0;
-                        mat.At<Vec3b>(i, j)[1] = 0;
-                        mat.At<Vec3b>(i, j)[2] = 0;
+                        if (((mat.At<Vec3b>(i, j)[0] >= 0 && mat.At<Vec3b>(i, j)[0] <= 10 ) || (mat.At<Vec3b>(i, j)[0] >= 165 && mat.At<Vec3b>(i, j)[0] <= 255)) &&
+                            ((mat.At<Vec3b>(i, j)[1] >= 163 && mat.At<Vec3b>(i, j)[1] <= 255) || (mat.At<Vec3b>(i, j)[1] >= 126 && mat.At<Vec3b>(i, j)[1] <= 255)) &&
+                            ((mat.At<Vec3b>(i, j)[2] >= 134 && mat.At<Vec3b>(i, j)[2] <= 255) || (mat.At<Vec3b>(i, j)[2] >= 165 && mat.At<Vec3b>(i, j)[2] <= 255)))
+                        {
+
+                        }
+                        else
+                        {
+                            mat.At<Vec3b>(i, j)[0] = 0;
+                            mat.At<Vec3b>(i, j)[1] = 0;
+                            mat.At<Vec3b>(i, j)[2] = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (mat.At<Vec3b>(i, j)[0] < colorKeys[0, 0] || mat.At<Vec3b>(i, j)[0] > colorKeys[0, 1] ||
+                            mat.At<Vec3b>(i, j)[1] < colorKeys[1, 0] || mat.At<Vec3b>(i, j)[1] > colorKeys[1, 1] ||
+                            mat.At<Vec3b>(i, j)[2] < colorKeys[2, 0] || mat.At<Vec3b>(i, j)[2] > colorKeys[2, 1])
+                        {
+                            mat.At<Vec3b>(i, j)[0] = 0;
+                            mat.At<Vec3b>(i, j)[1] = 0;
+                            mat.At<Vec3b>(i, j)[2] = 0;
+                        }
                     }
                 }
             }
@@ -219,8 +257,15 @@ namespace Laba4
             canDoMaskWithTemplate = checkBox3.Checked;
         }
 
+        private void button5_Click(object sender, EventArgs e)
+        {
+            sizeCont[0] = int.Parse(textBox8.Text);
+            sizeCont[1] = int.Parse(textBox9.Text);
+        }
+
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
+            findRed = false;
             switch (comboBox2.SelectedIndex)
             {
                 case 0:
@@ -232,6 +277,7 @@ namespace Laba4
                     hsvKeys[2, 1] = 255;
                     break;
                 case 1:
+                    findRed = true;
                     hsvKeys[0, 0] = 0;
                     hsvKeys[0, 1] = 10;
                     hsvKeys[1, 0] = 163;
@@ -240,11 +286,11 @@ namespace Laba4
                     hsvKeys[2, 1] = 255;
                     break;
                 case 2:
-                    hsvKeys[0, 0] = 18;
-                    hsvKeys[0, 1] = 60;
-                    hsvKeys[1, 0] = 120;
-                    hsvKeys[1, 1] = 255;
-                    hsvKeys[2, 0] = 175;
+                    hsvKeys[0, 0] = 15; // 18 
+                    hsvKeys[0, 1] = 40; // 60
+                    hsvKeys[1, 0] = 15; //120
+                    hsvKeys[1, 1] = 255; 
+                    hsvKeys[2, 0] = 140; //175
                     hsvKeys[2, 1] = 255;
                     break;
                 case 3:
@@ -257,7 +303,6 @@ namespace Laba4
                     break;
             }
         }
-
         private void checkBox4_CheckedChanged(object sender, EventArgs e)
         {
             canDoMaskHSV = checkBox4.Checked;
@@ -274,6 +319,7 @@ namespace Laba4
         private void Form1_Load(object sender, EventArgs e)
         {
             comboBox1.SelectedIndex = 0;
+            button5_Click(null, null);
             for (byte i = 0; i < 5; i++)
             {
                 templates[i] = new Mat($@"D:\Study\4 sem\TechnicalVision\Template\{i + 1}.png").Resize(sizeObject);
