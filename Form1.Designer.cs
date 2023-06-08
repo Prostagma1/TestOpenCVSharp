@@ -54,15 +54,14 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.panel4 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.label4 = new System.Windows.Forms.Label();
             this.button5 = new System.Windows.Forms.Button();
             this.textBox9 = new System.Windows.Forms.TextBox();
             this.textBox8 = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.checkBox4 = new System.Windows.Forms.CheckBox();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
-            this.listBox1 = new System.Windows.Forms.ListBox();
-            this.pictureBox3 = new System.Windows.Forms.PictureBox();
+            this.checkBox5 = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -70,14 +69,13 @@
             this.panel4.SuspendLayout();
             this.panel5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(553, 26);
+            this.button1.Location = new System.Drawing.Point(466, 26);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(106, 44);
+            this.button1.Size = new System.Drawing.Size(106, 48);
             this.button1.TabIndex = 0;
             this.button1.Text = "Старт";
             this.button1.UseVisualStyleBackColor = true;
@@ -86,7 +84,7 @@
             // pictureBox1
             // 
             this.pictureBox1.BackColor = System.Drawing.SystemColors.Control;
-            this.pictureBox1.Location = new System.Drawing.Point(665, 26);
+            this.pictureBox1.Location = new System.Drawing.Point(578, 26);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(850, 609);
             this.pictureBox1.TabIndex = 1;
@@ -198,7 +196,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(550, 84);
+            this.label2.Location = new System.Drawing.Point(436, 96);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(34, 16);
             this.label2.TabIndex = 12;
@@ -311,7 +309,7 @@
             "Проезд запрещён"});
             this.comboBox1.Location = new System.Drawing.Point(3, 30);
             this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(186, 24);
+            this.comboBox1.Size = new System.Drawing.Size(218, 24);
             this.comboBox1.TabIndex = 16;
             // 
             // panel4
@@ -321,26 +319,36 @@
             this.panel4.Controls.Add(this.checkBox3);
             this.panel4.Location = new System.Drawing.Point(346, 115);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(198, 65);
+            this.panel4.Size = new System.Drawing.Size(226, 65);
             this.panel4.TabIndex = 15;
             // 
             // panel5
             // 
             this.panel5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel5.Controls.Add(this.checkBox5);
+            this.panel5.Controls.Add(this.label4);
             this.panel5.Controls.Add(this.button5);
             this.panel5.Controls.Add(this.textBox9);
             this.panel5.Controls.Add(this.textBox8);
             this.panel5.Controls.Add(this.label3);
             this.panel5.Controls.Add(this.checkBox4);
-            this.panel5.Controls.Add(this.comboBox2);
             this.panel5.Location = new System.Drawing.Point(346, 186);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(198, 128);
+            this.panel5.Size = new System.Drawing.Size(226, 147);
             this.panel5.TabIndex = 16;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(3, 46);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(44, 16);
+            this.label4.TabIndex = 23;
+            this.label4.Text = "label4";
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(109, 70);
+            this.button5.Location = new System.Drawing.Point(145, 92);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(75, 50);
             this.button5.TabIndex = 18;
@@ -350,24 +358,24 @@
             // 
             // textBox9
             // 
-            this.textBox9.Location = new System.Drawing.Point(4, 98);
+            this.textBox9.Location = new System.Drawing.Point(3, 120);
             this.textBox9.Name = "textBox9";
-            this.textBox9.Size = new System.Drawing.Size(100, 22);
+            this.textBox9.Size = new System.Drawing.Size(136, 22);
             this.textBox9.TabIndex = 20;
-            this.textBox9.Text = "500";
+            this.textBox9.Text = "250";
             // 
             // textBox8
             // 
-            this.textBox8.Location = new System.Drawing.Point(3, 70);
+            this.textBox8.Location = new System.Drawing.Point(3, 96);
             this.textBox8.Name = "textBox8";
-            this.textBox8.Size = new System.Drawing.Size(100, 22);
+            this.textBox8.Size = new System.Drawing.Size(137, 22);
             this.textBox8.TabIndex = 18;
-            this.textBox8.Text = "50";
+            this.textBox8.Text = "40";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 51);
+            this.label3.Location = new System.Drawing.Point(3, 77);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(189, 16);
             this.label3.TabIndex = 17;
@@ -376,62 +384,38 @@
             // checkBox4
             // 
             this.checkBox4.AutoSize = true;
-            this.checkBox4.Location = new System.Drawing.Point(4, 3);
+            this.checkBox4.Location = new System.Drawing.Point(6, 3);
             this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(95, 20);
+            this.checkBox4.Size = new System.Drawing.Size(186, 20);
             this.checkBox4.TabIndex = 18;
-            this.checkBox4.Text = "checkBox4";
+            this.checkBox4.Text = "Поиск дорожных знаков";
             this.checkBox4.UseVisualStyleBackColor = true;
             this.checkBox4.CheckedChanged += new System.EventHandler(this.checkBox4_CheckedChanged);
-            // 
-            // comboBox2
-            // 
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Items.AddRange(new object[] {
-            "Зелёный",
-            "Красный",
-            "Жёлтый",
-            "Синий"});
-            this.comboBox2.Location = new System.Drawing.Point(3, 24);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(186, 24);
-            this.comboBox2.TabIndex = 17;
-            this.comboBox2.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
             // 
             // pictureBox2
             // 
             this.pictureBox2.BackColor = System.Drawing.SystemColors.Control;
-            this.pictureBox2.Location = new System.Drawing.Point(344, 320);
+            this.pictureBox2.Location = new System.Drawing.Point(12, 255);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(315, 315);
-            this.pictureBox2.TabIndex = 17;
+            this.pictureBox2.Size = new System.Drawing.Size(328, 315);
+            this.pictureBox2.TabIndex = 20;
             this.pictureBox2.TabStop = false;
             // 
-            // listBox1
+            // checkBox5
             // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.ItemHeight = 16;
-            this.listBox1.Location = new System.Drawing.Point(21, 257);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(315, 52);
-            this.listBox1.TabIndex = 18;
-            // 
-            // pictureBox3
-            // 
-            this.pictureBox3.BackColor = System.Drawing.SystemColors.Control;
-            this.pictureBox3.Location = new System.Drawing.Point(21, 320);
-            this.pictureBox3.Name = "pictureBox3";
-            this.pictureBox3.Size = new System.Drawing.Size(315, 315);
-            this.pictureBox3.TabIndex = 19;
-            this.pictureBox3.TabStop = false;
+            this.checkBox5.AutoSize = true;
+            this.checkBox5.Location = new System.Drawing.Point(6, 23);
+            this.checkBox5.Name = "checkBox5";
+            this.checkBox5.Size = new System.Drawing.Size(177, 20);
+            this.checkBox5.TabIndex = 21;
+            this.checkBox5.Text = "Включить все контуры";
+            this.checkBox5.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1536, 642);
-            this.Controls.Add(this.pictureBox3);
-            this.Controls.Add(this.listBox1);
+            this.ClientSize = new System.Drawing.Size(1443, 647);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.panel4);
@@ -460,7 +444,6 @@
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -494,15 +477,14 @@
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Panel panel4;
         private System.Windows.Forms.Panel panel5;
-        private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.CheckBox checkBox4;
-        private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.TextBox textBox9;
         private System.Windows.Forms.TextBox textBox8;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ListBox listBox1;
-        private System.Windows.Forms.PictureBox pictureBox3;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.CheckBox checkBox5;
     }
 }
 

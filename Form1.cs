@@ -24,8 +24,15 @@ namespace Laba4
         Point clickPoint;
         byte[,] keys = new byte[3, 2];
         byte[,] hsvKeys = new byte[3, 2];
-        Mat[] templates = new Mat[5];
+        Mat[,] templates = new Mat[5, 2];
         int[] sizeCont = new int[2];
+        string[] names = {
+            "Stop",
+            "Road up",
+            "Reversal",
+            "Left",
+            "Directly"
+        };
         public Form1()
         {
             InitializeComponent();
@@ -83,26 +90,50 @@ namespace Laba4
                     canPrintPoint = false;
                     ReadPixelValue(matInput, clickPoint);
                 }
-                if (canDoMask) DoMaskByKeys(keys, ref matInput);
-                if (canDoMaskWithTemplate) Cv2.BitwiseAnd(templates[comboBox1.SelectedIndex], matInput, matInput);
+                if (canDoMask) DoMaskByKeys(keys, ref matInput, false, false);
+                if (canDoMaskWithTemplate) Cv2.BitwiseAnd(templates[comboBox1.SelectedIndex, 0].Resize(sizeObject).CvtColor(ColorConversionCodes.GRAY2BGR), matInput, matInput);
                 if (canDoMaskHSV)
                 {
-                    listBox1.Items.Clear();
                     rects = new List<Rect>();
-                    SearchingContours(ref matInput, sizeCont, out rects,out bitmapDebugg, true);
-                    foreach (Rect rect in rects)
-                    {
-                        listBox1.Items.Add(rect);
-                    }
+                    SearchingContours(ref matInput, sizeCont, out rects, out bitmapDebugg, checkBox5.Checked);
+
+                    label4.Text = rects.Count.ToString();
+                    SearchSigns(ref matInput);
                 }
                 pictureBox1.Image = BitmapConverter.ToBitmap(matInput);
                 pictureBox2.Image = bitmapDebugg;
                 GC.Collect();
-                Cv2.WaitKey(500);
                 GC.WaitForPendingFinalizers();
             }
         }
-        public void SearchingContours(ref Mat inputMat,int[] sizeCountur,out List<Rect> filteredCounturs,out Bitmap bitmapDebugg, bool drawRectangle = false)
+        public void SearchSigns(ref Mat mat)
+        {
+            for (int g = 0; g < rects.Count; g++)
+            {
+                byte sign;
+                Mat[] matRYB =
+                {
+                     new Mat(matInput, rects[g]).Resize(new Size(128, 128)),
+                     new Mat(matInput, rects[g]).Resize(new Size(128, 128)),
+                     new Mat(matInput, rects[g]).Resize(new Size(128, 128))
+                };
+
+                for (byte i = 0; i < 3; i++)
+                {
+                    ChangeKeys(i);
+                    DoMaskByKeys(hsvKeys, ref matRYB[i], findRed);
+                    matRYB[i] = matRYB[i].Threshold(20, 255, ThresholdTypes.Binary);
+                }
+                Сomparison(matRYB, out sign);
+                if (sign != 255)
+                {
+                    mat.Rectangle(rects[g], Scalar.Green,2);
+                    mat.PutText(names[sign], new Point(rects[g].X-5, rects[g].Y-5), HersheyFonts.HersheySimplex, 0.7, Scalar.Green,2);
+                }
+            }
+
+        }
+        public void SearchingContours(ref Mat inputMat, int[] sizeCountur, out List<Rect> filteredCounturs, out Bitmap bitmapDebugg, bool drawRectangle = false)
         {
             filteredCounturs = new List<Rect>();
             Mat matForSearching = new Mat(sizeObject, MatType.CV_8UC3);
@@ -110,37 +141,33 @@ namespace Laba4
             Mat[] contours;
             inputMat.CopyTo(matForSearching);
 
-            matForSearching = matForSearching.CvtColor(ColorConversionCodes.BGR2HSV);
-            DoMaskByKeys(hsvKeys, ref matForSearching, findRed);
-
-            matForSearching = matForSearching.GaussianBlur(new Size(7, 7), 0);
-            bitmapDebugg = BitmapConverter.ToBitmap(matForSearching.CvtColor(ColorConversionCodes.HSV2BGR).Resize(new Size(256, 256)));
-
-            matForSearching = matForSearching.Canny(250, 100);
-            matForSearching.FindContours(out contours, mat, RetrievalModes.External, ContourApproximationModes.ApproxNone);
+            matForSearching = matForSearching.MedianBlur(3).Canny(70, 150);
+            bitmapDebugg = BitmapConverter.ToBitmap(matForSearching.Resize(new Size(256, 256)));
+            matForSearching.FindContours(out contours, mat, RetrievalModes.Tree, ContourApproximationModes.ApproxSimple);
             foreach (Mat countur in contours)
             {
                 var a = Cv2.BoundingRect(countur);
                 if (a.Width < sizeCountur[0] || a.Height < sizeCountur[0] || a.Width > sizeCountur[1] || a.Height > sizeCountur[1]) continue;
-                if (drawRectangle) 
+                if (drawRectangle)
                 {
                     Cv2.Rectangle(matInput, a, Scalar.Red);
-                    matInput.PutText(a.ToString(), new Point(a.X-5, a.Y - 15), HersheyFonts.HersheySimplex,0.5, Scalar.Red);
-                } 
+                    matInput.PutText(a.ToString(), new Point(a.X - 5, a.Y - 15), HersheyFonts.HersheySimplex, 0.5, Scalar.Red);
+                }
                 filteredCounturs.Add(a);
             }
         }
-        public void DoMaskByKeys(byte[,] colorKeys, ref Mat mat, bool findRed = false)
+        public void DoMaskByKeys(byte[,] colorKeys, ref Mat mat, bool red = false, bool hsv = true)
         {
+            if (hsv) mat = mat.CvtColor(ColorConversionCodes.BGR2HSV);
             for (int i = 0; i < mat.Rows; i++)
             {
                 for (int j = 0; j < mat.Cols; j++)
                 {
-                    if (findRed)
+                    if (red)
                     {
-                        if (((mat.At<Vec3b>(i, j)[0] >= 0 && mat.At<Vec3b>(i, j)[0] <= 10) || (mat.At<Vec3b>(i, j)[0] >= 165 && mat.At<Vec3b>(i, j)[0] <= 255)) &&
-                            ((mat.At<Vec3b>(i, j)[1] >= 163 && mat.At<Vec3b>(i, j)[1] <= 255) || (mat.At<Vec3b>(i, j)[1] >= 126 && mat.At<Vec3b>(i, j)[1] <= 255)) &&
-                            ((mat.At<Vec3b>(i, j)[2] >= 134 && mat.At<Vec3b>(i, j)[2] <= 255) || (mat.At<Vec3b>(i, j)[2] >= 165 && mat.At<Vec3b>(i, j)[2] <= 255)))
+                        if ((mat.At<Vec3b>(i, j)[0] >= 0 && mat.At<Vec3b>(i, j)[0] <= 10) || (mat.At<Vec3b>(i, j)[0] >= 165 && mat.At<Vec3b>(i, j)[0] <= 180) &&
+                            mat.At<Vec3b>(i, j)[1] >= 135 && mat.At<Vec3b>(i, j)[1] <= 255 && mat.At<Vec3b>(i, j)[2] >= 60 && mat.At<Vec3b>(i, j)[2] <= 255)
+
                         {
 
                         }
@@ -151,19 +178,18 @@ namespace Laba4
                             mat.At<Vec3b>(i, j)[2] = 0;
                         }
                     }
-                    else
+                    else if (mat.At<Vec3b>(i, j)[0] < colorKeys[0, 0] || mat.At<Vec3b>(i, j)[0] > colorKeys[0, 1] ||
+                        mat.At<Vec3b>(i, j)[1] < colorKeys[1, 0] || mat.At<Vec3b>(i, j)[1] > colorKeys[1, 1] ||
+                        mat.At<Vec3b>(i, j)[2] < colorKeys[2, 0] || mat.At<Vec3b>(i, j)[2] > colorKeys[2, 1])
                     {
-                        if (mat.At<Vec3b>(i, j)[0] < colorKeys[0, 0] || mat.At<Vec3b>(i, j)[0] > colorKeys[0, 1] ||
-                            mat.At<Vec3b>(i, j)[1] < colorKeys[1, 0] || mat.At<Vec3b>(i, j)[1] > colorKeys[1, 1] ||
-                            mat.At<Vec3b>(i, j)[2] < colorKeys[2, 0] || mat.At<Vec3b>(i, j)[2] > colorKeys[2, 1])
-                        {
-                            mat.At<Vec3b>(i, j)[0] = 0;
-                            mat.At<Vec3b>(i, j)[1] = 0;
-                            mat.At<Vec3b>(i, j)[2] = 0;
-                        }
+                        mat.At<Vec3b>(i, j)[0] = 0;
+                        mat.At<Vec3b>(i, j)[1] = 0;
+                        mat.At<Vec3b>(i, j)[2] = 0;
                     }
+
                 }
             }
+            if (hsv) mat = mat.CvtColor(ColorConversionCodes.HSV2BGR).CvtColor(ColorConversionCodes.BGR2GRAY);
         }
         public void ReadPixelValue(Mat inputMat, Point point)
         {
@@ -275,34 +301,78 @@ namespace Laba4
         {
             canDoMaskWithTemplate = checkBox3.Checked;
         }
-        private void button5_Click(object sender, EventArgs e)
+        private void Сomparison(Mat[] mats, out byte index)
         {
-            sizeCont[0] = int.Parse(textBox8.Text);
-            sizeCont[1] = int.Parse(textBox9.Text);
+            var tempMat = new Mat();
+            index = 255;
+            for (byte i = 0; i < 3; i++)
+            {
+                double maxProc = -1;
+                if (i == 0)
+                {
+                    for (byte j = 0; j < 2; j++)
+                    {
+                        mats[i].CopyTo(tempMat);
+                        int count = 0;
+                        double maxCount = templates[j, 0].CountNonZero();
+
+                        Cv2.BitwiseAnd(mats[i], templates[j, 0], tempMat);
+                        count += tempMat.CountNonZero();
+
+                        Cv2.BitwiseAnd(mats[i], templates[j, 1], tempMat);
+                        count -= tempMat.CountNonZero();
+
+                        if (count / maxCount > maxProc)
+                        {
+                            maxProc = count / maxCount;
+                            if (maxProc > 0.54)
+                            {
+                                index = j;
+                            }
+                        }
+                    }
+                }
+                else if (i == 2)
+                {
+                    for (byte j = 2; j < 5; j++)
+                    {
+                        mats[i].CopyTo(tempMat);
+                        int count = 0;
+                        double maxCount = templates[j, 0].CountNonZero();
+
+                        Cv2.BitwiseAnd(mats[i], templates[j, 0], tempMat);
+                        count += tempMat.CountNonZero();
+
+                        Cv2.BitwiseAnd(mats[i], templates[j, 1], tempMat);
+                        count -= tempMat.CountNonZero();
+
+                        if (count / maxCount > maxProc)
+                        {
+                            maxProc = count / maxCount;
+                            if (maxProc > 0.54)
+                            {
+                                index = j;
+                            }
+                        }
+                    }
+                }
+            }
         }
-        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        private void ChangeKeys(byte id)
         {
             findRed = false;
-            switch (comboBox2.SelectedIndex)
+            switch (id)
             {
-                case 0:
-                    hsvKeys[0, 0] = 50;
-                    hsvKeys[0, 1] = 80;
-                    hsvKeys[1, 0] = 200;
-                    hsvKeys[1, 1] = 255;
-                    hsvKeys[2, 0] = 30;
-                    hsvKeys[2, 1] = 255;
-                    break;
-                case 1:
+                case 0://R
                     findRed = true;
                     hsvKeys[0, 0] = 0;
-                    hsvKeys[0, 1] = 10;
-                    hsvKeys[1, 0] = 163;
+                    hsvKeys[0, 1] = 15;
+                    hsvKeys[1, 0] = 87;
                     hsvKeys[1, 1] = 255;
-                    hsvKeys[2, 0] = 134;
+                    hsvKeys[2, 0] = 96;
                     hsvKeys[2, 1] = 255;
                     break;
-                case 2:
+                case 1: //Y
                     hsvKeys[0, 0] = 15; // 18 
                     hsvKeys[0, 1] = 40; // 60
                     hsvKeys[1, 0] = 15; //120
@@ -310,15 +380,20 @@ namespace Laba4
                     hsvKeys[2, 0] = 140; //175
                     hsvKeys[2, 1] = 255;
                     break;
-                case 3:
+                case 2: //B
                     hsvKeys[0, 0] = 88;
-                    hsvKeys[0, 1] = 165;
-                    hsvKeys[1, 0] = 150;
+                    hsvKeys[0, 1] = 117;
+                    hsvKeys[1, 0] = 27;
                     hsvKeys[1, 1] = 255;
-                    hsvKeys[2, 0] = 100;
+                    hsvKeys[2, 0] = 33;
                     hsvKeys[2, 1] = 255;
                     break;
             }
+        }
+        private void button5_Click(object sender, EventArgs e)
+        {
+            sizeCont[0] = int.Parse(textBox8.Text);
+            sizeCont[1] = int.Parse(textBox9.Text);
         }
         private void checkBox4_CheckedChanged(object sender, EventArgs e)
         {
@@ -339,7 +414,8 @@ namespace Laba4
             button5_Click(null, null);
             for (byte i = 0; i < 5; i++)
             {
-                templates[i] = new Mat($@"D:\Study\4 sem\TechnicalVision\Template\{i + 1}.png").Resize(sizeObject);
+                templates[i, 0] = new Mat($@"D:\Study\4 sem\TechnicalVision\Template\{i + 1}.png", ImreadModes.Grayscale).Resize(new Size(128, 128));
+                templates[i, 1] = new Mat($@"D:\Study\4 sem\TechnicalVision\Template\{i + 1}_N.jpg", ImreadModes.Grayscale).Resize(new Size(128, 128));
             }
             for (byte i = 0; i < 3; i++)
             {
